@@ -8,6 +8,7 @@
 #     ohmyzsh/custom/themes/*.zsh-theme  -> $ZSH_CUSTOM/themes (oh-my-zsh)
 #     spicetify/                         -> ~/.config/spicetify
 #     fonts/*.ttf                       -> ~/Library/Fonts
+#     wallpapers/current-wallpaper.*     -> ~/Pictures/taro-rice/
 #
 #   Usage:
 #     ./install.sh             # back up existing files, then install
@@ -150,6 +151,28 @@ for f in "$REPO_DIR"/fonts/*.ttf; do
 	cp "$f" "$FONT_DIR/"
 	info "installed font $(basename "$f")"
 done
+
+# --- wallpaper --------------------------------------------------------------
+WALLPAPER_SRC=""
+for f in "$REPO_DIR"/wallpapers/current-wallpaper.*; do
+	[ -e "$f" ] || continue
+	WALLPAPER_SRC="$f"
+	break
+done
+
+if [ -n "$WALLPAPER_SRC" ]; then
+	WALLPAPER_DIR="$HOME/Pictures/taro-rice"
+	mkdir -p "$WALLPAPER_DIR"
+	WALLPAPER_DEST="$WALLPAPER_DIR/$(basename "$WALLPAPER_SRC")"
+	cp "$WALLPAPER_SRC" "$WALLPAPER_DEST"
+	info "installed wallpaper $(basename "$WALLPAPER_DEST")"
+
+	osascript <<OSA >/dev/null 2>&1 || warn "Could not apply wallpaper automatically; set $WALLPAPER_DEST manually from System Settings."
+tell application "System Events"
+	set picture of every desktop to "$WALLPAPER_DEST"
+end tell
+OSA
+fi
 
 # --- spicetify (themed Spotify) ---------------------------------------------
 # The Marketplace-applied theme's CSS lives in Spotify's localStorage and cannot

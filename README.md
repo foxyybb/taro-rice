@@ -12,6 +12,7 @@ for transport between machines.
 | oh-my-zsh theme | `ohmyzsh/custom/themes/*.zsh-theme` | `$ZSH_CUSTOM/themes/` |
 | Spicetify config/template | `spicetify/` | `~/.config/spicetify/` |
 | App icon font | `fonts/*.ttf` | `~/Library/Fonts/` |
+| Wallpaper | `wallpapers/current-wallpaper.png` | `~/Pictures/taro-rice/` |
 
 ## Install
 
@@ -22,8 +23,8 @@ git clone <this-repo> ~/rice && cd ~/rice
 
 The script installs dependencies via Homebrew (`Brewfile`), backs up any existing
 files to `~/.rice-backup/<timestamp>/`, deploys the configs, installs the fonts,
-applies portable Spicetify settings without replacing Spicetify's machine-local
-backup metadata, and (re)starts SketchyBar.
+copies and applies the wallpaper, applies portable Spicetify settings without
+replacing Spicetify's machine-local backup metadata, and (re)starts SketchyBar.
 
 ### Options
 
