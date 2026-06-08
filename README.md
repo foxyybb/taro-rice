@@ -8,6 +8,7 @@ for transport between machines.
 | Component | Source | Destination |
 |-----------|--------|-------------|
 | SketchyBar config | `sketchybar/.config/sketchybar/` | `~/.config/sketchybar/` |
+| Kitty config/themes | `kitty/.config/kitty/` | `~/.config/kitty/` |
 | tmux | `tmux.conf` | `~/.tmux.conf` |
 | oh-my-zsh theme | `ohmyzsh/custom/themes/*.zsh-theme` | `$ZSH_CUSTOM/themes/` |
 | Spicetify config/template | `spicetify/` | `~/.config/spicetify/` |
@@ -37,7 +38,8 @@ replacing Spicetify's machine-local backup metadata, and (re)starts SketchyBar.
 ## Dependencies
 
 Installed by `brew bundle` (see `Brewfile`): `sketchybar`, `jq`, `ifstat`,
-`tmux`, `spicetify-cli`, Spotify, CaskaydiaCove Nerd Font, SF Pro, and Amethyst.
+`tmux`, Kitty, `spicetify-cli`, Spotify, CaskaydiaCove Nerd Font, SF Pro, and
+Amethyst.
 
 ## Post-install
 

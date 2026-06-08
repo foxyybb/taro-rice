@@ -4,6 +4,7 @@
 #
 #   Components:
 #     sketchybar/.config/sketchybar      -> ~/.config/sketchybar
+#     kitty/.config/kitty                -> ~/.config/kitty
 #     tmux.conf                          -> ~/.tmux.conf
 #     ohmyzsh/custom/themes/*.zsh-theme  -> $ZSH_CUSTOM/themes (oh-my-zsh)
 #     spicetify/                         -> ~/.config/spicetify
@@ -128,6 +129,9 @@ fi
 deploy "$REPO_DIR/sketchybar/.config/sketchybar" "$HOME/.config/sketchybar"
 # plugin scripts must stay executable
 find "$HOME/.config/sketchybar" -name '*.sh' -exec chmod +x {} +
+
+# --- kitty config + themes --------------------------------------------------
+deploy "$REPO_DIR/kitty/.config/kitty" "$HOME/.config/kitty"
 
 # --- tmux -------------------------------------------------------------------
 deploy "$REPO_DIR/tmux.conf" "$HOME/.tmux.conf"

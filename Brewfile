@@ -6,6 +6,7 @@ brew "sketchybar"   # the bar itself
 brew "jq"           # toggle_stats.sh state parsing
 brew "ifstat"       # network.sh up/down throughput
 brew "tmux"         # tmux.conf target
+cask "kitty"        # terminal emulator + packaged themes
 
 # Spotify + Spicetify (themed Spotify client)
 cask "spotify"
