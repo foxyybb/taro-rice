@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Local backups created by install.sh
+.rice-backup/
+
+# Node (sketchybar-app-font build tooling)
+node_modules/
+
+# Upstream app-font checkout/build tooling. The packaged font lives in fonts/.
+sketchybar-app-font/
+
+# Spicetify rebuildable / runtime artifacts (Marketplace app is reinstalled)
+spicetify/CustomApps/
+spicetify/**/marketplace-dist.zip
+spicetify/**/marketplace-tmp/
+
+# Per-machine SketchyBar overrides
+sketchybar/.config/sketchybar/plugins/local_config.sh
+
+# Editor
+.vscode/
+*.swp
