@@ -30,6 +30,7 @@ sketchybar --default \
 
 sketchybar --add item date right \
             --set date icon=􀧞 \
+                       icon.font="SF Pro:16.0" \
                        icon.color=0xffcba6f7 \
                        label.color=0xffcdd6f4 \
                         update_freq=5 \
@@ -71,6 +72,7 @@ label.padding_right=10 \
                              background.drawing=off \
              --add item date.uptime popup.date \
              --set date.uptime icon=􀐫 \
+                             icon.font="SF Pro:16.0" \
                              icon.color=0xffcba6f7 \
                              icon.padding_left=10 \
                              label.color=0xffcdd6f4 \
@@ -80,14 +82,16 @@ label.padding_right=10 \
                              background.drawing=off \
 
 sketchybar --add item battery right \
-           --set battery icon.color=0xffcba6f7 \
+           --set battery icon.font="SF Pro:16.0" \
+                         icon.color=0xffcba6f7 \
                          label.color=0xffcdd6f4 \
                          update_freq=10 \
                          script="$PLUGIN_DIR/battery.sh" \
            --subscribe battery system_woke power_source_change mouse.clicked
 
 sketchybar --add item volume_icon right \
-           --set volume_icon icon.color=0xffcba6f7 \
+           --set volume_icon icon.font="SF Pro:16.0" \
+                         icon.color=0xffcba6f7 \
                          label.color=0xffcdd6f4 \
                          script="$PLUGIN_DIR/volume.sh" \
                          popup.align=center \
@@ -105,6 +109,7 @@ sketchybar --add item volume_icon right \
                                  slider.background.color=0xff313244 \
                                  slider.highlight_color=0xffcba6f7 \
                                  slider.knob=􀀁 \
+                                 slider.knob.font="SF Pro:16.0" \
                                  background.drawing=off \
                                  background.height=2 \
                                  padding_left=10 \
