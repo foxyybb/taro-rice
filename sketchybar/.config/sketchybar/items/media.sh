@@ -14,7 +14,6 @@ media_cover=(
   label.font="CaskaydiaCove Nerd Font:Bold:14.0"
   label.max_chars=50
   drawing=off
-  update_freq=3
   background.color=0xcc1e1e2e
   background.border_color=0x44cba6f7
   background.border_width=1
@@ -22,9 +21,11 @@ media_cover=(
   background.height=30
 )
 
-sketchybar --add item media.cover right \
+sketchybar --add event spotify_playback com.spotify.client.PlaybackStateChanged \
+           --add event music_playback com.apple.Music.playerInfo \
+           --add item media.cover right \
            --set media.cover "${media_cover[@]}" \
-           --subscribe media.cover media_change
+           --subscribe media.cover spotify_playback music_playback system_woke
 
 
 #### test

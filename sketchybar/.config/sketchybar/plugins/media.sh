@@ -1,48 +1,74 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-# Ensure UTF-8 encoding for proper handling of international characters
 export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
 
-APP=""
-for app in "Spotify" "Music"; do
-  if pgrep -x "$app" > /dev/null 2>&1; then
-    STATE="$(osascript -e "tell application \"$app\" to player state" 2>/dev/null)"
-    if [ "$STATE" = "playing" ] || [ "$STATE" = "paused" ]; then
-      APP="$app"
-      break
-    fi
-  fi
-done
+# Query on initialization, wake, click, or an incomplete notification, never
+# on a timer. Don't send Apple events to an app that isn't already running.
+snapshot() {
+  local app
+  local -a running=()
+  for app in Spotify Music; do
+    if pgrep -x -u "$UID" "$app" >/dev/null; then running+=("$app"); fi
+  done
+  if [ "${#running[@]}" -eq 0 ]; then printf '{}\n'; return; fi
+  osascript -l JavaScript - "${1:-refresh}" "${running[@]}" <<'JXA'
+function run([action, ...names]) {
+  for (const name of names) {
+    try {
+      const app = Application(name);
+      let state = String(app.playerState());
+      if (state !== 'playing' && state !== 'paused') continue;
+      if (action === 'toggle') {
+        app.playpause();
+        state = String(app.playerState());
+      }
+      const track = app.currentTrack;
+      return JSON.stringify({'Player State':state, Name:track.name(), Artist:track.artist()});
+    } catch (_) { /* Player quit or has no current track. */ }
+  }
+  return '{}';
+}
+JXA
+}
 
-if [ -n "$APP" ]; then
-  # A click (click_script passes "toggle") flips play/pause on the active app,
-  # then we fall through to refresh the label/icon with the new state.
-  if [ "$1" = "toggle" ]; then
-    osascript -e "tell application \"$APP\" to playpause" 2>/dev/null
-    STATE="$(osascript -e "tell application \"$APP\" to player state" 2>/dev/null)"
-  fi
+parse_info() {
+  jq -er 'select(type == "object") |
+    [((."Player State" // "") | ascii_downcase), (.Name // ""), (.Artist // "")] |
+    .[] | strings | gsub("[\r\n]"; " ")' <<<"$1"
+}
 
-  TITLE="$(osascript -e "tell application \"$APP\" to name of current track" 2>/dev/null)"
-  ARTIST="$(osascript -e "tell application \"$APP\" to artist of current track" 2>/dev/null)"
-
-  # Convert to UTF-8 and sanitize for sketchybar
-  TITLE="$(echo "$TITLE" | iconv -f UTF-8 -t UTF-8//IGNORE 2>/dev/null | tr -d '\n\r')"
-  ARTIST="$(echo "$ARTIST" | iconv -f UTF-8 -t UTF-8//IGNORE 2>/dev/null | tr -d '\n\r')"
-
-  LABEL="$ARTIST - $TITLE"
-  if [ ${#LABEL} -gt 50 ]; then
-    LABEL="$(echo "$LABEL" | cut -c1-47)..."
-  fi
-
-  # Icon reflects current state: pause glyph while playing, play glyph while paused.
-  if [ "$STATE" = "playing" ]; then
-    ICON="􀊆"
-  else
-    ICON="􀊄"
-  fi
-
-  sketchybar --set media.cover drawing=on label="$LABEL" icon="$ICON"
+if [ "${1:-}" = toggle ]; then
+  info=$(snapshot toggle) || exit 1
 else
-  sketchybar --set media.cover drawing=off
+  case "${SENDER:-forced}" in
+    spotify_playback|music_playback)
+      info=${INFO:-}
+      # Spotify has priority when both players are open. A stop from one
+      # player, or a notification without userInfo, may expose the other.
+      if ! jq -e '((."Player State" // "") | ascii_downcase | . == "playing" or . == "paused")
+                  and (.Name | type == "string") and (.Artist | type == "string")' \
+            >/dev/null 2>&1 <<<"$info" ||
+         { [ "$SENDER" = music_playback ] && pgrep -x -u "$UID" Spotify >/dev/null; }; then
+        info=$(snapshot) || exit 1
+      fi
+      ;;
+    forced|system_woke) info=$(snapshot) || exit 1 ;;
+    *) exit 0 ;;
+  esac
 fi
+
+fields=$(parse_info "$info") || exit 1
+{
+  IFS= read -r state
+  IFS= read -r title
+  IFS= read -r artist
+} <<<"$fields"
+case "$state" in
+  playing) icon="􀊆" ;;
+  paused)  icon="􀊄" ;;
+  *) exec sketchybar --set media.cover drawing=off ;;
+esac
+
+label="$artist - $title"
+if [ "${#label}" -gt 50 ]; then label="${label:0:47}..."; fi
+exec sketchybar --set media.cover drawing=on label="$label" icon="$icon"
