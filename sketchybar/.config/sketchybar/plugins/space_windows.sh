@@ -59,6 +59,12 @@ export LC_ALL=en_US.UTF-8
 umask 077
 CACHE_DIR="${TMPDIR:-$HOME/Library/Caches}/taro-rice-spaces"
 mkdir -p "$CACHE_DIR" || exit 1
+[[ "${NAME:-}" = discord_badge || "${SENDER:-}" = space_windows_change ]] || exit 0
+
+# SketchyBar launches event scripts concurrently. Don't let a slow window-open
+# snapshot overwrite a later close, or race a badge redraw.
+exec 9>"$CACHE_DIR/events.lock"
+/usr/bin/lockf 9 || exit 1
 
 # Events for different Spaces arrive concurrently. Replace just one complete
 # label at a time; a badge refresh must never clear another Space's icons.
@@ -100,7 +106,6 @@ if [ "${NAME:-}" = discord_badge ]; then
   exit 0
 fi
 
-[ "${SENDER:-}" = space_windows_change ] || exit 0
 # The index in the native event is the Mission Control ordinal, not the CGS ID.
 # Ignore partial events; only an explicit empty apps object clears the label.
 snapshot=$(jq -er '
