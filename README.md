@@ -65,3 +65,27 @@ cp ~/.config/sketchybar/plugins/local_config.example.sh ~/.config/sketchybar/plu
 
 Then edit `NETWORK_IFACE` in `local_config.sh` (for example, `en7`). That file is
 ignored by git so device-specific interface names do not leak into the package.
+
+## Checking WindowServer port growth
+
+Run `./scripts/check-windowserver.sh` for a read-only ten-minute sample (or pass
+a duration in seconds). Compare samples on the **same WindowServer PID**, with
+similar activity and playback state. It reports total ports and new GUI client
+connections; when run as root it also counts dead-name port entries. The script
+never requests administrator access. Look for the **growth rate**, not an
+immediate drop: changing the bar doesn't reclaim names already leaked.
+
+The media item listens to Spotify and Music playback notifications. A refresh
+or click can still start one `osascript`; idle or paused playback should not
+start one every three seconds. Window icons use the native `space_windows_change`
+payload for each Space, including the initial snapshots from
+`sketchybar --update`. A separate 15-second badge check reads Discord's LaunchServices
+status without enumerating windows. Other apps can still open GUI connections.
+
+For an A/B comparison, temporarily pause **one** item's script with
+`sketchybar --set media.cover updates=off` or
+`sketchybar --set space_watcher updates=off`. Restore the item with `updates=on`
+and run `sketchybar --update`
+before the next sample. For copy-mode installs, deploy the edited SketchyBar
+files to `~/.config/sketchybar/` and run `sketchybar --reload`; the full
+installer isn't needed for this check.

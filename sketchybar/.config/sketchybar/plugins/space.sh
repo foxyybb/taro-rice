@@ -16,9 +16,8 @@ else
     icon.color=0xffcba6f7
 fi
 
-# [Amethyst] Window icons are refreshed for ALL spaces at once by the
-# space_watcher item (-> space_windows.sh), which maps every window to its space
-# via the private CoreGraphics Spaces API. This script only handles highlighting.
+# [Amethyst] space_windows.sh handles per-Space window events; this script
+# only handles highlighting.
 
 # [AeroSpace version] 
 # # Get the focused workspace - prefer the environment variable from trigger, otherwise query

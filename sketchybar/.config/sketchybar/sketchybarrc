@@ -142,8 +142,7 @@ source "$CONFIG_DIR/items/media.sh"
 # [Amethyst version] - Amethyst drives native macOS Spaces, so the sketchybar
 # "space" component and $SELECTED highlighting work natively (like Yabai). Each
 # space component runs space.sh purely for highlighting. Window icons for ALL
-# spaces are refreshed centrally by the space_watcher below (-> space_windows.sh),
-# which maps every window to its space via the private CoreGraphics Spaces API.
+# spaces come from SketchyBar's own per-Space window notifications.
 # Amethyst has no CLI to focus a native space, so there is no click_script.
 SPACE_SIDS=(1 2 3 4 5 6 7 8 9 10)
 for sid in "${SPACE_SIDS[@]}"; do
@@ -151,6 +150,7 @@ for sid in "${SPACE_SIDS[@]}"; do
              --set space.$sid \
                       space=$sid \
                       icon=$sid \
+                      label=" —" \
                       label.font="sketchybar-app-font:Regular:18.0" \
                       label.padding_right=20 \
                       label.y_offset=-2 \
@@ -181,17 +181,15 @@ done
 #               --subscribe space.$sid aerospace_workspace_change front_app_switched
 # done
 
-# [Amethyst] Central window-icon watcher. Runs space_windows.sh on space change
-# and app switch; that script reconciles ALL space labels at once from the
-# private CoreGraphics Spaces API (no per-space race, no animation timing bugs).
-# update_freq adds light periodic reconciliation to catch changes that emit no
-# event (e.g. opening/closing a window within the same app, or Amethyst moving a
-# window between spaces without changing the front app).
 sketchybar --add item space_watcher center \
-           --set space_watcher background.drawing=off \
-                                 update_freq=3 \
-                                 script="$PLUGIN_DIR/space_windows.sh" \
-           --subscribe space_watcher space_change front_app_switched
+           --set space_watcher drawing=off updates=on script="$PLUGIN_DIR/space_windows.sh" \
+           --subscribe space_watcher space_windows_change
+
+# A Dock badge can change without any window event. Read only the badge here,
+# not the windows on every Space.
+sketchybar --add item discord_badge center \
+           --set discord_badge drawing=off updates=on update_freq=15 script="$PLUGIN_DIR/space_windows.sh" \
+           --subscribe discord_badge system_woke
 
 sketchybar --add item front_app left \
            --set front_app icon.font="sketchybar-app-font:Regular:18.0" \
@@ -216,8 +214,7 @@ sketchybar 	--add event 				hide_stats   					                                  
 
 
 # --- Yabai signals ---
-# [Yabai-only] Amethyst provides no signal/CLI interface. sketchybar's built-in
-# space_change and front_app_switched events drive the Amethyst setup instead.
+# [Yabai-only] The active Amethyst setup uses SketchyBar's native events instead.
 # yabai -m signal --add event=window_focused action="sketchybar --trigger front_app_switched INFO=\"\$(yabai -m query --windows --window | jq -r '.app // \"Finder\"')\""
 # yabai -m signal --add event=space_changed action="sketchybar --trigger space_change"
 # yabai -m signal --add event=window_created action="sketchybar --trigger front_app_switched INFO=\"\$(yabai -m query --windows --window | jq -r '.app // \"Finder\"')\"; sketchybar --trigger space_windows_change"
@@ -225,11 +222,8 @@ sketchybar 	--add event 				hide_stats   					                                  
 # yabai -m signal --add event=window_minimized action="sketchybar --trigger front_app_switched INFO=\"\$(yabai -m query --windows --window | jq -r '.app // \"Finder\"')\"; sketchybar --trigger space_windows_change"
 # yabai -m signal --add event=window_deminimized action="sketchybar --trigger front_app_switched INFO=\"\$(yabai -m query --windows --window | jq -r '.app // \"Finder\"')\"; sketchybar --trigger space_windows_change"
 
+# Also requests an initial space_windows_change snapshot for every Space.
 sketchybar --update
-
-# [Amethyst] Populate space window icons immediately on load (before the first
-# space_change / front_app_switched event fires).
-"$PLUGIN_DIR/space_windows.sh"
 
 # --- AeroSpace logic ---
 # sketchybar --add event aerospace_workspace_change
